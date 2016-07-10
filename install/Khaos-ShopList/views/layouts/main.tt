@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
+<title>Khaos::ShopList</title>
+<link rel="stylesheet" href="[% request.uri_base %]/css/style.css" />
+
+<!-- Grab jQuery from a CDN, fall back to local if necessary -->
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript">/* <![CDATA[ */
+    !window.jQuery && document.write('<script type="text/javascript" src="[% request.uri_base %]/javascripts/jquery.js"><\/script>')
+/* ]]> */</script>
+
+</head>
+<body>
+
+<table>
+    <tr>
+
+<!--    <td><a href='[% request.uri_base %]/list_items %]'>List Items</a></td> -->
+
+        <td><a href='[% request.uri_base %]/add_list'>Add List</a></td>
+
+        <td><a href='[% request.uri_base %]/add_item'>Add Item</a></td>
+
+        <td><a href='[% request.uri_base %]/list_all_items'>List All Items</a></td>
+
+    </tr>
+
+</table>
+
+[% content %]
+</body>
+</html>

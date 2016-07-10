@@ -1,0 +1,23 @@
+views: "/opt/khaospy/www-dancer-tt/"
+
+template: "template_toolkit"
+
+#session: Memcached
+#engines:
+#  session:
+#    Memcached:
+#      memcached_servers: "127.0.0.1:11211"
+
+plugins:
+    Database:
+        driver: Pg
+        database: 'shoplist'
+        host: 'localhost'
+        port: 5432
+        sslmode : 'require'
+        username: 'shoplist_write'
+        password: 'password'
+        connection_check_threshold: 10
+        dbi_params:
+            sslmode: 'require'
+

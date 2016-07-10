@@ -12,24 +12,24 @@ BEGIN;
 ---------------------
 -- users
 ---------------------
-CREATE SEQUENCE users_seq;
-GRANT SELECT ON users_seq TO khaospy_read;
-GRANT ALL ON users_seq TO khaospy_write;
-create table users (
-    id INTEGER PRIMARY KEY DEFAULT nextval('users_seq') NOT NULL,
-    username                        text not null unique,
-    name                            text NOT NULL UNIQUE,
-    email                           text not null unique,
-    passhash                        text NOT NULL,
-    passhash_expire                 timestamp with time zone,
-    passhash_must_change            boolean,
-    is_api_user                     boolean not null default false,
-    is_admin                        boolean not null default false,
-    can_remote                      boolean not null default false,
-    mobile_phone                    text not null unique
-);
-GRANT SELECT ON users TO khaospy_read;
-GRANT ALL ON users TO khaospy_write;
+--CREATE SEQUENCE users_seq;
+--GRANT SELECT ON users_seq TO khaospy_read;
+--GRANT ALL ON users_seq TO khaospy_write;
+--create table users (
+--    id INTEGER PRIMARY KEY DEFAULT nextval('users_seq') NOT NULL,
+--    username                        text not null unique,
+--    name                            text NOT NULL UNIQUE,
+--    email                           text not null unique,
+--    passhash                        text NOT NULL,
+--    passhash_expire                 timestamp with time zone,
+--    passhash_must_change            boolean,
+--    is_api_user                     boolean not null default false,
+--    is_admin                        boolean not null default false,
+--    can_remote                      boolean not null default false,
+--    mobile_phone                    text not null unique
+--);
+--GRANT SELECT ON users TO khaospy_read;
+--GRANT ALL ON users TO khaospy_write;
 
 --------------------
 -- item_groups
@@ -40,7 +40,8 @@ GRANT ALL ON item_groups_seq TO shoplist_write;
 CREATE TABLE item_groups (
     id            INTEGER PRIMARY KEY DEFAULT nextval('item_groups_seq') NOT NULL,
     name          TEXT NOT NULL UNIQUE,
-    tag           TEXT NOT NULL UNIQUE
+    tag           TEXT NOT NULL UNIQUE,
+    sequence      integer
 );
 GRANT SELECT ON item_groups TO shoplist_read;
 GRANT ALL    ON item_groups TO shoplist_write;
@@ -86,6 +87,7 @@ GRANT ALL ON items_seq TO shoplist_write;
 CREATE TABLE items (
     id            INTEGER PRIMARY KEY DEFAULT nextval('items_seq') NOT NULL,
     item_group_id INTEGER NOT NULL REFERENCES item_groups,
+    show_item     BOOLEAN DEFAULT FALSE,
     name          TEXT NOT NULL UNIQUE
 );
 GRANT SELECT ON items TO shoplist_read;
@@ -99,10 +101,12 @@ GRANT SELECT ON item_lists_seq TO shoplist_read;
 GRANT ALL ON item_lists_seq TO shoplist_write;
 CREATE TABLE item_lists (
     id INTEGER PRIMARY KEY DEFAULT nextval('item_lists_seq') NOT NULL,
-    user_id       INTEGER NOT NULL REFERENCES users,
+--    user_id       INTEGER NOT NULL REFERENCES users,
     item_id       INTEGER NOT NULL REFERENCES items,
     list_id       INTEGER NOT NULL REFERENCES lists,
+    price         REAL,
     priority      integer not null
+
     -- priority ( 1 -> 3 ) 1 == Need, 2 == would-like , 3 == maybe
 );
 GRANT SELECT ON item_lists TO shoplist_read;
@@ -116,7 +120,8 @@ GRANT SELECT ON item_shops_seq TO shoplist_read;
 GRANT ALL ON item_shops_seq TO shoplist_write;
 CREATE TABLE item_shops (
     shop_id       INTEGER NOT NULL REFERENCES shops,
-    item_id       INTEGER NOT NULL REFERENCES items
+    item_id       INTEGER NOT NULL REFERENCES items,
+    price         REAL
 );
 GRANT SELECT ON item_shops TO shoplist_read;
 GRANT ALL    ON item_shops TO shoplist_write;

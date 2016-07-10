@@ -1,0 +1,51 @@
+<h3>Add Item</h3>
+
+[% error_msg %]
+
+<table>
+
+    <form method='POST' action='[% request.uri_base %]/add_item'>
+
+        <tr>
+            <td>Name</td>
+            <td>
+                <input type="text" value="[% old_name %]" name="name"/>
+            </td>
+        </tr>
+        <tr>
+            <td>Show item</td>
+            <td>
+                <input type="checkbox" value="true" name="show_item" checked/>
+            </td>
+        </tr>
+        <tr>
+            <td>Shops</td>
+            <td>
+                <select name='shops' multiple size='9' >
+                    [% FOREACH row IN shops %]
+                        <option value='[% row.id %]'> [% row.name %] </option>
+                    [% END %]
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Category</td>
+            <td>
+                <select name='item_group'>
+                    [% FOREACH row IN item_groups %]
+                        <option value='[% row.id %]' [% IF row.id == old_item_group %] selected [% END %] >
+                            [% row.name %]
+                        </option>
+                    [% END %]
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="submit" value="Submit"/>
+            </td>
+        </tr>
+    </form>
+</table>
+
+

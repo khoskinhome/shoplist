@@ -1,0 +1,36 @@
+
+
+
+add items
+    add item_shops
+
+edit items
+    edit item_shops
+
+
+view items
+
+
+
+add list
+
+
+
+add item_lists
+
+
+
+edit item_lists
+
+
+
+view item_lists
+
+
+
+
+As a user I want to go to the web page and see :
+    A drop down of existing lists.
+    A button to add a new list.
+
+    A 
