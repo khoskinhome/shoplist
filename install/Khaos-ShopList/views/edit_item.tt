@@ -1,0 +1,53 @@
+<h3>Edit Item</h3>
+
+[% error_msg %]
+
+<table>
+
+    <form method='POST' action='[% request.uri_base %]/edit_item'>
+        <input type='hidden' name='item_id' value='[% item.id %]'/>
+        <tr>
+            <td>Name</td>
+            <td>
+                <input type="text" value="[% item.name %]" name="name"/>
+            </td>
+        </tr>
+        <tr>
+            <td>Show item</td>
+            <td>
+                <!-- TODO fixed to work out 'checked' -->
+                <input type="checkbox" value="true" name="show_item" [% IF item.show_item %] checked [% END %] />
+            </td>
+        </tr>
+        <tr>
+            <td>Shops</td>
+            <td>
+                <select name='shops' multiple size='9' >
+                    [% FOREACH row IN shops %]
+                        <!-- TODO fixed to work out 'selected' -->
+                        <option value='[% row.id %]' [% FOREACH it_shp IN item_shops %] [% IF it_shp.shop_id == row.id %] selected [% END %] [% END %] > [% row.name %] </option>
+                    [% END %]
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Category</td>
+            <td>
+                <select name='item_group'>
+                    [% FOREACH row IN item_groups %]
+                        <option value='[% row.id %]' [% IF row.id == item.item_group_id %] selected [% END %] >
+                            [% row.name %]
+                        </option>
+                    [% END %]
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="submit" value="Submit"/>
+            </td>
+        </tr>
+    </form>
+</table>
+
+

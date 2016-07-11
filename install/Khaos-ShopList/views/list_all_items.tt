@@ -1,1 +1,27 @@
-List All Items
+<h3>List All Items</h3>
+[% error_msg %]
+
+<table>
+    [% FOREACH group IN items %]
+        <tr><td><h4>[% group.item_group_name %]</h4></td></tr>
+
+        [% count = 0 %]
+                <tr>
+        [% FOREACH item IN group.items %]
+            [% count = count + 1 %]
+            [% IF count > 4 %]
+                [% count = 0 %]
+                </tr>
+                <tr>
+            [% END %]
+                    <td><a href='[% request.uri_base %]/edit_item/[% item.id %]'>[% item.shops_n_name %]</a></td>
+        [% END %]
+
+        [% IF count != 0 %]
+                </tr>
+        [% END %]
+
+    [% END %]
+</table>
+
+
