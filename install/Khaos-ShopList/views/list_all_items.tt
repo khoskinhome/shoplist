@@ -1,3 +1,5 @@
+[% INCLUDE items.tt %]
+
 <h3>List All Items</h3>
 [% error_msg %]
 

@@ -1,0 +1,27 @@
+<table>
+    <tr>
+        <td><a href='[% request.uri_base %]/add_list'>Add List</a></td>
+    </tr>
+
+    <form method='GET' action='[% request.uri_base %]/lists_action'>
+        <tr>
+            <td>
+                <select name='list_id'>
+                    [% FOREACH row IN lists %]
+                        <option value='[% row.id %]'>
+                            [% row.name %]
+                        </option>
+                    [% END %]
+                </select>
+            </td>
+            <td>
+                <input type="submit" name='edit_list_items' value="Edit Items"/>
+            </td>
+            <td>
+                <input type="submit" name='edit_list' value="Edit List"/>
+            </td>
+        </tr>
+    </form>
+
+</table>
+

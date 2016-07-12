@@ -1,28 +1,28 @@
 [% INCLUDE lists.tt %]
-<h3>Add List</h3>
-
+<h3>Edit List</h3>
 [% error_msg %]
 
 <table>
 
-    <form method='POST' action='[% request.uri_base %]/add_list'>
+    <form method='POST' action='[% request.uri_base %]/edit_list'>
 
+        <input type='hidden' name='list_id' value='[% edit_list.id %]'/>
         <tr>
             <td>Name</td>
             <td>
-                <input type="text" value="[% old_name %]" name="name"/>
+                <input type="text" value="[% edit_list.name %]" name="name"/>
             </td>
         </tr>
         <tr>
             <td>Show All Items</td>
             <td>
-                <input type="checkbox" name="show_all_items" />
+                <input type="checkbox" name="show_all_items" [% IF edit_list.show_all_items %] checked [% END %]/>
             </td>
         </tr>
         <tr>
             <td>Show List</td>
             <td>
-                <input type="checkbox" name="show_list" checked />
+                <input type="checkbox" name="show_list" [% IF edit_list.show_list %] checked [% END %] />
             </td>
         </tr>
 
@@ -33,5 +33,6 @@
         </tr>
     </form>
 </table>
+
 
 
