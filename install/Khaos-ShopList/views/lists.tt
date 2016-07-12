@@ -15,7 +15,7 @@
                 </select>
             </td>
             <td>
-                <input type="submit" name='edit_list_items' value="Edit Items"/>
+                <input type="submit" name='edit_shopping_list' value="Edit Shopping List"/>
             </td>
             <td>
                 <input type="submit" name='edit_list' value="Edit List"/>

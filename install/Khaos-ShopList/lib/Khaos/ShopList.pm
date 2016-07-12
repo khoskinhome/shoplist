@@ -26,18 +26,15 @@ get '/lists_action' => sub {
             edit_list => get_table_by_field('lists', 'id', params->{list_id})->[0],
             lists => get_table('lists','create_date DESC'),
         }
-    } elsif ( param('edit_list_items') ){
+    } elsif ( param('edit_shopping_list') ){
 
-        template 'edit_list_items.tt', {
+        template 'edit_shopping_list.tt', {
             lists => get_table('lists','create_date DESC'),
+
         }
     }
 
 };
-
-#get '/edit_list' => sub {
-#    template 'edit_list.tt';
-#};
 
 post '/edit_list' => sub {
 
@@ -208,6 +205,15 @@ get '/list_all_items' => sub {
         items => get_items_n_shops_ordered(true),
     };
 };
+
+sub get_shopping_list {
+
+    # TODO . this is a copy and paste get_items_n_shops_ordered()
+    # this needs to get the data from the shown/unshown items and also the quantities from the shopping_lists table.
+
+    my ($show_all) = @_;
+
+}
 
 sub get_items_n_shops_ordered {
     my ($show_all) = @_;
