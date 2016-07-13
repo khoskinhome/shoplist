@@ -19,7 +19,7 @@
     <tr>
 
         <td><a href='[% request.uri_base %]/lists'>Lists</a></td>
-        <td><a href='[% request.uri_base %]/items'>Items</a></td>
+        <td><a href='[% request.uri_base %]/list_shown_items'>Items</a></td>
         <td><a href='[% request.uri_base %]/shops'>Shops</a></td>
         <td><a href='[% request.uri_base %]/categories'>Categories</a></td>
 

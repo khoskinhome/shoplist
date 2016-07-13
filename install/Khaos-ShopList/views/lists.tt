@@ -8,7 +8,7 @@
             <td>
                 <select name='list_id'>
                     [% FOREACH row IN lists %]
-                        <option value='[% row.id %]'>
+                        <option value='[% row.id %]' [% IF list_id == row.id %] selected [% END %] >
                             [% row.name %]
                         </option>
                     [% END %]

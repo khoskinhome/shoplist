@@ -1,6 +1,6 @@
 [% INCLUDE items.tt %]
 
-<h3>List All Items</h3>
+<h3>All Items</h3>
 [% error_msg %]
 
 <table>
@@ -19,9 +19,7 @@
                     <td><a href='[% request.uri_base %]/edit_item/[% item.id %]'>[% item.shops_n_name %]</a></td>
         [% END %]
 
-        [% IF count != 0 %]
                 </tr>
-        [% END %]
 
     [% END %]
 </table>

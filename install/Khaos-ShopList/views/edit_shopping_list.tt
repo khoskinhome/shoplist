@@ -3,25 +3,66 @@
 
 [% error_msg %]
 
+<script>
+
+    $(document).ready(function(){
+        $("button").click(function(){
+            var item_id            = $(this).attr('name');
+            var plus_minus_action  = $(this).attr('value');
+            var list_id = '[% list_id %]';
+
+            // TODO at least check list_id is valid and not empty.
+
+            // alert(' list_id = [% list_id %] : item_id =' + item_id + ' : action = ' + plus_minus_action );
+
+            $.post( "/edit_shopping_list_item/" + list_id + "/" + item_id + "/" + plus_minus_action,
+                { },
+                function(data, http_status){
+                    // TODO handle http_status errors.
+
+                    var obj = $.parseJSON(data);
+                    // alert("Data: " + data + "\nStatus: " + status + '   ' + obj['quantity'] + '  ' +  obj['item_id']);
+
+                    var quantity = obj['quantity'];
+                    if ( quantity == 0 ) { quantity = '' };
+
+                    $("#quantity_item_id_" + obj['item_id'] ).val(quantity);
+
+                }
+            );
+
+        });
+
+    });
+
+</script>
+
 <table>
     [% FOREACH group IN shopping_list %]
         <tr><td><h4>[% group.item_group_name %]</h4></td></tr>
 
-        [% count = 0 %]
+        [% count = -1 %]
+
                 <tr>
+
         [% FOREACH item IN group.items %]
             [% count = count + 1 %]
-            [% IF count > 4 %]
+            [% IF count > 2 %]
                 [% count = 0 %]
                 </tr>
                 <tr>
             [% END %]
-                    <td><a href='[% request.uri_base %]/edit_item/[% item.id %]'>[% item.shops_n_name %]</a></td>
+
+                    <td>
+                        <button name ='[% item.id %]' value='minus'>-</button>
+                        <input  id='quantity_item_id_[% item.id %]' name ='[% item.id %]' value='[% IF item.shopping_list_quantity %][% item.shopping_list_quantity %][% END %]' type='text' style="width: 25px;" disabled >
+                        <button name ='[% item.id %]' value='plus'>+</button>
+
+
+                    <td>[% item.shops_n_name %]</td>
         [% END %]
 
-        [% IF count != 0 %]
                 </tr>
-        [% END %]
 
     [% END %]
 </table>

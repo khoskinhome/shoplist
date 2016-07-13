@@ -24,21 +24,110 @@ get '/lists_action' => sub {
     if ( param('edit_list')){
         template 'edit_list.tt', {
             edit_list => get_table_by_field('lists', 'id', params->{list_id})->[0],
-            lists => get_table('lists','create_date DESC'),
+            lists     => get_table('lists','create_date DESC'),
+            list_id   => params->{list_id},
         }
     } elsif ( param('edit_shopping_list') ){
 
-        template 'edit_shopping_list.tt', {
-            lists => get_table('lists','create_date DESC'),
+        warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}) );
 
+        template 'edit_shopping_list.tt', {
+            lists         => get_table('lists','create_date DESC'),
+            list_id       => params->{list_id},
+            shopping_list =>
+                get_items_n_shops_ordered(undef,params->{list_id}),
         }
     }
+};
+
+post '/edit_shopping_list_item/:list_id/:item_id/:plus_minus_action' => sub {
+
+    # warn ( { Dumper(params()) } );
+    my $quantity;
+    eval{ $quantity = plus_minus_shopping_list_item({ params() }) };
+    if ( $@ ) {
+        warn $@."\n";
+
+        status 'bad_request'; # TODO might be internal error.
+    }
+
+    status 'OK';
+    return to_json { quantity => $quantity, item_id => param("item_id") };
 
 };
 
+sub plus_minus_shopping_list_item {
+    my ($data) = @_;
+
+    my $sql = "select * from shopping_lists where list_id = ? and item_id = ? ";
+
+    my $sth = database->prepare($sql);
+    $sth->execute($data->{list_id}, $data->{item_id});
+
+    my $results ;
+    while ( my $row = $sth->fetchrow_hashref ){
+        # TODO a constraint on shopping_lists making list_id, item_id combo unique.
+        die "more than one record returned for shopping list list_id=$data->{list_id}, item_id = $data->{item_id}" if $results;
+        $results = $row;
+    }
+
+    my $change_quantity = sub {
+        my ($quantity) = @_;
+        $data->{plus_minus_action}= lc($data->{plus_minus_action});
+        if ( $data->{plus_minus_action} eq 'plus' ) {
+            $quantity++;
+        } elsif ( $data->{plus_minus_action} eq 'minus' ) {
+            $quantity--;
+            $quantity = 0 if $quantity < 0;
+        } else {
+            die "Unrecognised plus_minus_action of '$data->{plus_minus_action}'"
+        }
+        return $quantity;
+    };
+
+    if ( defined $results ) {
+        warn "DO UPDATE";
+        my $quantity = $change_quantity->( $results->{quantity} );
+
+        my $sql =<<"        EOSQL";
+            update shopping_lists set
+                quantity = ?
+            where id = ?
+        EOSQL
+
+        my $sth = database->prepare($sql);
+        my $rv = $sth->execute(
+            $quantity,
+            $results->{id},
+        );
+
+        return $quantity;
+
+    } else {
+        warn "DO INSERT";
+        my $quantity = $change_quantity->( 0 );
+
+        my $sql =<<"        EOSQL";
+            insert into shopping_lists
+            (item_id,list_id,priority,quantity)
+            VALUES ( ?,?,?,? )
+        EOSQL
+
+        my $sth = database->prepare($sql);
+        my $rv = $sth->execute(
+            $data->{item_id},
+            $data->{list_id},
+            0,
+            $quantity,
+        );
+
+        return $quantity;
+    }
+}
+
 post '/edit_list' => sub {
 
-    warn "POST PARAMS \n".Dumper (params());
+    # warn "POST PARAMS \n".Dumper (params());
 
     eval { edit_list({ params() }) };
     if ( $@ ) {
@@ -216,12 +305,45 @@ sub get_shopping_list {
 }
 
 sub get_items_n_shops_ordered {
-    my ($show_all) = @_;
+    my ($show_all, $shopping_list_id) = @_;
 
-    my $where = '';
-    $where = 'where i.show_item is true' if ! $show_all;
+    # $show_all works on the items.show_item field.
+    # if the $shopping_list_id is supplied, $show_all for items will be got from the lists record ( and $show_all param supplied to sub is ignored )
 
-    my $sql =<<"    EOSQL";
+    my $select = '';
+    my $where  = '';
+    my $from   = '';
+    my @bind   = ();
+
+    if ( ! $shopping_list_id ) {
+        $where = 'where i.show_item is true' if ! $show_all;
+    } else {
+
+        $select = << "        EOSQL_1";
+            ,shplst.quantity  as shopping_list_quantity
+            ,shplst.priority as shopping_list_priority
+            ,shplst.price    as shopping_list_price
+            ,shplst.id       as shopping_list_id
+            ,shplst.list_id as shopping_list_list_id
+        EOSQL_1
+
+        $from =
+             "left join lists as list on ( list.id = ? )"
+            ."left join shopping_lists as shplst on (shplst.item_id = i.id)";
+
+        $where = << "        EOSQL_2";
+            where ( shplst.list_id = ? or shplst.list_id is null )
+            and (
+                ( list.show_all_items = false and i.show_item = true )
+                or list.show_all_items = true
+            )
+        EOSQL_2
+
+        @bind = ( $shopping_list_id, $shopping_list_id );
+
+    }
+
+    my $sql =<<"    EOSQL_3";
         select
             i.id as item_id,
             i.name as item_name,
@@ -232,18 +354,21 @@ sub get_items_n_shops_ordered {
             ishp.price as item_shop_price,
             s.name   as shop_name,
             s.tag    as shop_tag
+            $select
         from items as i
             left join item_groups as igs  on (i.item_group_id = igs.id)
             left join item_shops  as ishp on (ishp.item_id = i.id )
             left join shops       as s    on (s.id = ishp.shop_id )
+            $from
+
         $where
 
         order by igs.sequence, i.name, s.name
 
-    EOSQL
+    EOSQL_3
 
     my $sth = database->prepare($sql);
-    $sth->execute();
+    $sth->execute( @bind );
 
     my $results = [];
 
@@ -254,6 +379,20 @@ sub get_items_n_shops_ordered {
         my ($i_ar_last) = @_;
 
         $i_ar_last->{shops_n_name} = "(".join(',',@{$i_ar_last->{shops}}).") ".$i_ar_last->{name};
+    };
+
+    my $shopping_items = sub {
+        my ( $row ) = @_;
+        if ( $shopping_list_id ) {
+            return (
+                shopping_list_quantity => $row->{shopping_list_quantity},
+                shopping_list_priority => $row->{shopping_list_priority},
+                shopping_list_price    => $row->{shopping_list_price},
+                shopping_list_id       => $row->{shopping_list_id},
+                shopping_list_list_id  => $row->{shopping_list_list_id},
+            );
+        }
+        return ();
     };
 
     while ( my $row = $sth->fetchrow_hashref ){
@@ -267,10 +406,12 @@ sub get_items_n_shops_ordered {
 
         if ($current_item_name ne $row->{item_name}){
             $current_item_name = $row->{item_name};
+
             push @{$results->[$#$results]{items}}
                 , { id    => $row->{item_id},
                     name  => $current_item_name,
                     shops => [ $row->{shop_tag}],
+                    $shopping_items->($row),
                   };
 
             my $i_ar = $results->[$#$results]{items};
@@ -281,12 +422,80 @@ sub get_items_n_shops_ordered {
             push @{$i_ar->[$#$i_ar]{shops}}, $row->{shop_tag};
             $gen_item_shop->($i_ar->[$#$i_ar]);
         }
-
     }
-
     return $results;
 }
 
+#sub get_items_n_shops_ordered {
+#    my ($show_all) = @_;
+#
+#    my $where = '';
+#    $where = 'where i.show_item is true' if ! $show_all;
+#
+#    my $sql =<<"    EOSQL";
+#        select
+#            i.id as item_id,
+#            i.name as item_name,
+#            i.show_item,
+#            igs.id as item_group_id,
+#            igs.name as item_group_name,
+#            igs.tag  as item_group_tag,
+#            ishp.price as item_shop_price,
+#            s.name   as shop_name,
+#            s.tag    as shop_tag
+#        from items as i
+#            left join item_groups as igs  on (i.item_group_id = igs.id)
+#            left join item_shops  as ishp on (ishp.item_id = i.id )
+#            left join shops       as s    on (s.id = ishp.shop_id )
+#        $where
+#
+#        order by igs.sequence, i.name, s.name
+#
+#    EOSQL
+#
+#    my $sth = database->prepare($sql);
+#    $sth->execute();
+#
+#    my $results = [];
+#
+#    my $current_item_name  = '';
+#    my $current_item_group_name = '';
+#
+#    my $gen_item_shop = sub {
+#        my ($i_ar_last) = @_;
+#
+#        $i_ar_last->{shops_n_name} = "(".join(',',@{$i_ar_last->{shops}}).") ".$i_ar_last->{name};
+#    };
+#
+#    while ( my $row = $sth->fetchrow_hashref ){
+#        if ( $current_item_group_name ne $row->{item_group_name} ){
+#            $current_item_group_name = $row->{item_group_name};
+#            push @$results, {
+#                item_group_name => $row->{item_group_name},
+#                items => []
+#            };
+#        }
+#
+#        if ($current_item_name ne $row->{item_name}){
+#            $current_item_name = $row->{item_name};
+#            push @{$results->[$#$results]{items}}
+#                , { id    => $row->{item_id},
+#                    name  => $current_item_name,
+#                    shops => [ $row->{shop_tag}],
+#                  };
+#
+#            my $i_ar = $results->[$#$results]{items};
+#            $gen_item_shop->($i_ar->[$#$i_ar]);
+#
+#        } else {
+#            my $i_ar = $results->[$#$results]{items};
+#            push @{$i_ar->[$#$i_ar]{shops}}, $row->{shop_tag};
+#            $gen_item_shop->($i_ar->[$#$i_ar]);
+#        }
+#
+#    }
+#    return $results;
+#}
 
 sub _check_item_data {
     my ($data) = @_;
