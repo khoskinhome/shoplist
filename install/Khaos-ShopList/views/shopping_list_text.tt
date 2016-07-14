@@ -1,0 +1,8 @@
+[% error_msg %][% shopping_list_name %][% FOREACH group IN shopping_list %]
+
+#################################
+[% group.item_group_name %][% count = -1 %]
+#################################
+[% FOREACH item IN group.items %][% IF count > 2 %][% count = 0 %]
+
+[% END %][% IF item.shopping_list_quantity > 1 %][% item.shopping_list_quantity %] x [% END %][% IF item.shopping_list_quantity > 0 %][% item.shops_n_name %] / [% count = count + 1 %][% END %][% END %][% END %]

@@ -1,27 +1,75 @@
+<script>
+    $(document).ready(function(){
+        $("button.navigate").click(function(){
+
+            var route = $(this).attr('name');
+            var list_id = $('#list_id').val();
+
+            var urlref = '[% request.uri_base %]/' + route + '/' + list_id ;
+
+            if ( route == 'view_shopping_list_text' ){
+                window.open(urlref);
+                return false;
+            }
+
+            location.replace(urlref);
+            return false;
+        });
+
+        $("button.plus_minus").click(function(){
+            var item_id            = $(this).attr('name');
+            var plus_minus_action  = $(this).attr('value');
+            var list_id = '[% list_id %]';
+
+            // TODO at least check list_id is valid and not empty.
+
+            // alert(' list_id = [% list_id %] : item_id =' + item_id + ' : action = ' + plus_minus_action );
+
+            $.post( "/edit_shopping_list_item/" + list_id + "/" + item_id + "/" + plus_minus_action,
+                { },
+                function(data, http_status){
+                    // TODO handle http_status errors.
+
+                    var obj = $.parseJSON(data);
+                    // alert("Data: " + data + "\nStatus: " + status + '   ' + obj['quantity'] + '  ' +  obj['item_id']);
+
+                    var quantity = obj['quantity'];
+                    if ( quantity == 0 ) { quantity = '' };
+
+                    $("#quantity_item_id_" + obj['item_id'] ).val(quantity);
+
+                }
+            );
+
+        });
+
+    });
+</script>
+
 <table>
     <tr>
         <td><a href='[% request.uri_base %]/add_list'>Add List</a></td>
     </tr>
 
-    <form method='GET' action='[% request.uri_base %]/lists_action'>
-        <tr>
-            <td>
-                <select name='list_id'>
-                    [% FOREACH row IN lists %]
-                        <option value='[% row.id %]' [% IF list_id == row.id %] selected [% END %] >
-                            [% row.name %]
-                        </option>
-                    [% END %]
-                </select>
-            </td>
-            <td>
-                <input type="submit" name='edit_shopping_list' value="Edit Shopping List"/>
-            </td>
-            <td>
-                <input type="submit" name='edit_list' value="Edit List"/>
-            </td>
-        </tr>
-    </form>
-
+    <tr>
+        <td>
+            <select id='list_id' name='list_id'>
+                [% FOREACH row IN lists %]
+                    <option value='[% row.id %]' [% IF list_id == row.id %] selected [% END %] >
+                        [% row.name %]
+                    </option>
+                [% END %]
+            </select>
+        </td>
+        <td>
+            <button class='navigate' name='edit_shopping_list'>Edit Shopping List</button>
+        </td>
+        <td>
+            <button class='navigate' name='edit_list'>Edit List</button>
+        </td>
+        <td>
+            <button class='navigate' name='view_shopping_list_text' >Printable</button>
+        </td>
+    </tr>
 </table>
 

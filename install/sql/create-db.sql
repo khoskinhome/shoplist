@@ -4,8 +4,10 @@
 
 create database shoplist ;
 
-ALTER USER shoplist_read WITH PASSWORD 'password';
+create role shoplist_read;
+create role shoplist_write;
 
+ALTER USER shoplist_read WITH PASSWORD 'password';
 ALTER USER shoplist_write WITH PASSWORD 'password';
 
 ALTER ROLE shoplist_read WITH LOGIN;

@@ -12,32 +12,50 @@ get '/' => sub {
 
 ## Lists
 get '/lists'      => sub {
-
     template 'lists.tt', {
         lists => get_table('lists','create_date DESC'),
     }
-
 };
 
-get '/lists_action' => sub {
-
-    if ( param('edit_list')){
-        template 'edit_list.tt', {
-            edit_list => get_table_by_field('lists', 'id', params->{list_id})->[0],
-            lists     => get_table('lists','create_date DESC'),
-            list_id   => params->{list_id},
-        }
-    } elsif ( param('edit_shopping_list') ){
-
-        warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}) );
-
-        template 'edit_shopping_list.tt', {
-            lists         => get_table('lists','create_date DESC'),
-            list_id       => params->{list_id},
-            shopping_list =>
-                get_items_n_shops_ordered(undef,params->{list_id}),
-        }
+get '/edit_list/:list_id' => sub {
+    template 'edit_list.tt', {
+        edit_list => get_table_by_field('lists', 'id', params->{list_id})->[0],
+        lists     => get_table('lists','create_date DESC'),
+        list_id   => params->{list_id},
     }
+};
+
+post '/edit_list' => sub {
+    # warn "POST PARAMS \n".Dumper (params());
+    eval { edit_list({ params() }) };
+    if ( $@ ) {
+        warn $@."\n";
+
+        my $return_params = { error_msg => $@, };
+        return redirect uri_for('/edit_list/'.params()->{list_id}, $return_params);
+    }
+    redirect uri_for('/lists');
+};
+
+get '/edit_shopping_list/:list_id' => sub {
+    # warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}) );
+    template 'edit_shopping_list.tt', {
+        lists         => get_table('lists','create_date DESC'),
+        list_id       => params->{list_id},
+        shopping_list =>
+            get_items_n_shops_ordered(undef,params->{list_id}),
+    }
+};
+
+get '/view_shopping_list_text/:list_id' => sub {
+    # warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}, true) );
+    header 'Content-Type' => 'application/json';
+    template 'shopping_list_text.tt', {
+        lists         => get_table('lists','create_date DESC'),
+        list_id       => params->{list_id},
+        shopping_list =>
+            get_items_n_shops_ordered(undef,params->{list_id}, true),
+    }, { layout => undef };
 };
 
 post '/edit_shopping_list_item/:list_id/:item_id/:plus_minus_action' => sub {
@@ -124,21 +142,6 @@ sub plus_minus_shopping_list_item {
         return $quantity;
     }
 }
-
-post '/edit_list' => sub {
-
-    # warn "POST PARAMS \n".Dumper (params());
-
-    eval { edit_list({ params() }) };
-    if ( $@ ) {
-        warn $@."\n";
-
-        my $return_params = { error_msg => $@, };
-        return redirect uri_for('/edit_list/'.params()->{list_id}, $return_params);
-    }
-
-    redirect uri_for('/lists');
-};
 
 sub edit_list {
     my ($data) = @_;
@@ -296,7 +299,7 @@ get '/list_all_items' => sub {
 };
 
 sub get_items_n_shops_ordered {
-    my ($show_all, $shopping_list_id) = @_;
+    my ($show_all, $shopping_list_id, $quant_gt_zero) = @_;
 
     # $show_all works on the items.show_item field.
     # if the $shopping_list_id is supplied, $show_all for items will be got from the lists record ( and $show_all param supplied to sub is ignored )
@@ -309,6 +312,7 @@ sub get_items_n_shops_ordered {
     if ( ! $shopping_list_id ) {
         $where = 'where i.show_item is true' if ! $show_all;
     } else {
+
 
         $select = << "        EOSQL_1";
             ,shplst.quantity  as shopping_list_quantity
@@ -329,6 +333,8 @@ sub get_items_n_shops_ordered {
                 or list.show_all_items = true
             )
         EOSQL_2
+
+        $where .= " and shplst.quantity > 0\n" if $quant_gt_zero;
 
         @bind = ( $shopping_list_id, $shopping_list_id );
 
