@@ -50,7 +50,7 @@ get '/edit_shopping_list/:list_id' => sub {
 get '/view_shopping_list_text/:list_id' => sub {
     # warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}, true) );
     header 'Content-Type' => 'application/json';
-    template 'shopping_list_text.tt', {
+    template 'shopping_list_text_justify.tt', {
         lists         => get_table('lists','create_date DESC'),
         list_id       => params->{list_id},
         shopping_list =>

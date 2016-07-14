@@ -1,0 +1,12 @@
+[% error_msg %][% shopping_list_name %]
+[% linestr = '' %]
+[% FOREACH group IN shopping_list %][%IF linestr.length > 0 %][% linestr %][% linestr = '' %]
+[% END %]
+#################################
+[% group.item_group_name %]
+#################################
+
+[% FOREACH item IN group.items %][% itemstr = '' %][% IF item.shopping_list_quantity > 1 %][% itemstr = itemstr _ item.shopping_list_quantity _ ' x ' %][% END %][% IF item.shopping_list_quantity > 0 %][% itemstr = itemstr _ item.shops_n_name _ ' / ' %][% END %][% trystr = linestr _ itemstr %][% IF trystr.length > 100 %][% linestr %]
+
+[% linestr = itemstr %][% ELSE %][% linestr = trystr %][% END %][% END %][% END %][%IF linestr.length > 0 %][% linestr %][% linestr = '' %][% END %]
+
