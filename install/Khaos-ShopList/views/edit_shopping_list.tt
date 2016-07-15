@@ -20,9 +20,9 @@
             [% END %]
 
                     <td>
-                        <button class='plus_minus' name ='[% item.id %]' value='minus'>-</button>
-                        <input  id='quantity_item_id_[% item.id %]' name ='[% item.id %]' value='[% IF item.shopping_list_quantity %][% item.shopping_list_quantity %][% END %]' type='text' style="width: 25px;" disabled >
-                        <button class='plus_minus' name ='[% item.id %]' value='plus'>+</button>
+                        <button class='plus_minus quantity' name ='[% item.id %]' value='minus'>-</button>
+                        <input  class='quantity' id='quantity_item_id_[% item.id %]' name ='[% item.id %]' value='[% IF item.shopping_list_quantity %][% item.shopping_list_quantity %][% END %]' type='text' style="width: 25px;" disabled >
+                        <button class='plus_minus quantity' name ='[% item.id %]' value='plus'>+</button>
 
 
                     <td>[% item.shops_n_name %]</td>

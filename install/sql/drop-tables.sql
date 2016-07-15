@@ -7,8 +7,8 @@ DROP TABLE item_shops ;
 DROP SEQUENCE item_shops_seq;
 
 
-DROP TABLE item_lists ;
-DROP SEQUENCE item_lists_seq;
+DROP TABLE shopping_lists ;
+DROP SEQUENCE shopping_lists_seq;
 
 
 DROP TABLE items ;

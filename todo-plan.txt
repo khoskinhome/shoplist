@@ -1,0 +1,74 @@
+get rid of <a> tag links, replace with <button>s
+
+css pretifying
+
+items table
+    order_by int default 1.
+
+items_order action.
+    new view on items that allows the order_by to be set, using jQuery.
+
+
+list_hidden_items action. new !
+
+view_shopping_list_pdf action. new !
+    generates a pdf version of the shopping list.
+
+add_category action. New !
+    can only add categories, ui will not allow renaming.
+
+add_shop action. New !
+    can only add shops, ui will not allow renaming.
+
+edit_item action
+    a way to set the shop prices.
+    a way to set the items.order_by int.
+
+    stop editting of item names that have more than one un-finalised-list referencing it.
+
+
+view_shopping_list action. new!
+    jQuery, refresh the shopping list being viewed.
+
+edit_shopping_list action
+
+    jQuery, refresh the shopping list being editted.
+
+Make a mobile friendly version (responsive)
+
+Prices.
+    take the dearest shop price and summarise.
+    take the cheapest shop and summarise.
+
+
+edit_list
+    finalise checkbox. has pop up warning, saying no editting afterwards.
+        item names and prices are copied from items table into shopping_lists table.
+
+delete_finalised_list action. new !
+    will error if a list hasn't been finalised.
+
+
+edit_shopping_list action
+
+    will throw an error on a finalised shopping list.
+
+    shopping_lists table, new fields :
+        final_item_price
+        final_item_name
+
+        constraint that says either item_id or final_item_name is null, and one must be not null.
+
+
+
+the drop down box that selects the list, make jQuery hide/show the action buttons depending on if the list is finalised or not. i.e.
+    Active Lists can
+        Edit Shopping list
+        Edit List
+        be Printable
+    Finalised Lists can be
+        Printable
+        Deleted.
+
+
+Get local browser to open text editor
