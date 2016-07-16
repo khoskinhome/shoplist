@@ -1,8 +1,8 @@
 <table>
     <tr>
-
-        TODO . Not yet implemented.
-
+        <td><button class='navigate' name='list_categories'>List Categories</button></td>
+        <td><button class='navigate' name='add_category'>Add Category</button></td>
     </tr>
 </table>
+
 

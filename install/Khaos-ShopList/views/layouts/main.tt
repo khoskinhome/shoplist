@@ -29,7 +29,7 @@
         <td><button class='navigate' name='lists'>Lists</button></td>
         <td><button class='navigate' name='list_shown_items'>Items</button></td>
         <td><button class='navigate' name='shops'>Shops</button></td>
-        <td><button class='navigate' name='categories'>Categories</button></td>
+        <td><button class='navigate' name='list_categories'>Categories</button></td>
     </tr>
 </table>
 

@@ -16,6 +16,12 @@ get '/' => sub {
 
 ## Lists
 get '/lists'      => sub {
+
+    my $list_row = get_max_id_row_table("lists");
+    if ( $list_row->{id} ) {
+        return redirect uri_for('/edit_shopping_list/'.$list_row->{id});
+    }
+
     template 'lists.tt', {
         lists => get_table('lists','create_date DESC'),
     }
@@ -545,11 +551,99 @@ sub edit_item {
 }
 
 # shops
-get '/shops'      => sub { template 'shops.tt' };
+get '/shops'      => sub {
+
+    return template 'not_yet_implemented';
+
+    # template 'shops.tt';
+};
 
 # categories
 get '/categories' => sub { template 'categories.tt' };
 
+get '/list_categories' => sub {
+    return template 'list_categories.tt', {
+        categories => get_table('item_groups', 'sequence'),
+        error_msg  => param('error_msg'),
+    };
+};
+
+get '/add_category' => sub {
+    return template 'add_category.tt', {
+        error_msg    => param('error_msg'),
+        old_name     => param('old_name'),
+        old_tag      => param('old_tag'),
+        old_sequence => param('old_sequence'),
+    };
+};
+
+post '/add_category' => sub {
+
+    eval { add_category({ params() }) };
+    if ( $@ ) {
+        warn $@."\n";
+        my $return_params = {
+            error_msg => $@,
+            old_name     => param("name"),
+            old_tag      => param("tag"),
+            old_sequence => param("sequence"),
+        };
+
+        return redirect uri_for('/add_category', $return_params);
+    }
+
+    return redirect uri_for('/add_category');
+};
+
+get '/edit_category/:category_id' => sub {
+
+    template 'not_yet_implemented';
+#    return template 'edit_category.tt', {
+#        error_msg    => param('error_msg'),
+#        old_name     => param('old_name'),
+#        old_tag      => param('old_tag'),
+#        old_sequence => param('old_sequence'),
+#    };
+};
+
+post '/edit_category' => sub {
+
+#    eval { add_category({ params() }) };
+#    if ( $@ ) {
+#        warn $@."\n";
+#        my $return_params = {
+#            error_msg => $@,
+#            old_name     => param("name"),
+#            old_tag      => param("tag"),
+#            old_sequence => param("sequence"),
+#        };
+#
+#        return redirect uri_for('/edit_category', $return_params);
+#    }
+#
+#    return redirect uri_for('/add_category');
+};
+
+sub add_category {
+    my ($data) = @_;
+
+    my $sql =<<"    EOSQL";
+        insert into item_groups
+        ( name, tag, sequence )
+        values ( ?, ?, ? )
+    EOSQL
+
+    my $sth = database->prepare($sql);
+    my $rv = $sth->execute(
+        $data->{name},
+        $data->{tag},
+        $data->{sequence},
+    );
+}
+
+#################
+# db general subs
+#################
 sub get_table_by_field {
     my ($table, $field, $id) = @_;
 
@@ -563,6 +657,21 @@ sub get_table_by_field {
         push @$results, $row;
     }
     return $results;
+}
+
+sub get_max_id_row_table {
+    my ($table) = @_;
+
+    my $sql = "select * from $table where id in ( select max(id) from $table )";
+
+    my $sth = database->prepare($sql);
+    $sth->execute();
+
+    my $results = [];
+    while ( my $row = $sth->fetchrow_hashref ){
+        return $row;
+    }
+    return {};
 }
 
 sub get_table {

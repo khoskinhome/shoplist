@@ -1,0 +1,37 @@
+[% INCLUDE categories.tt %]
+<h3>Add Category</h3>
+
+[% error_msg %]
+
+<table>
+
+    <form method='POST' action='[% request.uri_base %]/add_category'>
+
+        <tr>
+            <td>Name</td>
+            <td>
+                <input type="text" value="[% old_name %]" name="name"/>
+            </td>
+        </tr>
+        <tr>
+            <td>Tag</td>
+            <td>
+                <input type="text" value="[% old_tag %]" name="tag"/>
+            </td>
+        </tr>
+        <tr>
+            <td>Sort Order</td>
+            <td>
+                <input type="text" value="[% old_sequence %]" name="sequence"/>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <input type="submit" value="Submit"/>
+            </td>
+        </tr>
+    </form>
+</table>
+
+

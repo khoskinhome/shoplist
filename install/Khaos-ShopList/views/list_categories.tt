@@ -1,0 +1,17 @@
+[% INCLUDE categories.tt %]
+<h3>List Categories</h3>
+[% error_msg %]
+
+<table>
+    <tr>
+        <th>Category</th><th>Sequence</th>
+    </tr>
+    [% FOREACH category IN categories %]
+        </tr>
+            <td><a href='[% request.uri_base %]/edit_category/[% category.id %]'>[% category.name %]</a></td>
+            <td>[% category.sequence %]</td>
+        </tr>
+    [% END %]
+</table>
+
+
