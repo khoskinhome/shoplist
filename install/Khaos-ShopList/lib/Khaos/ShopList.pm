@@ -570,10 +570,10 @@ get '/list_categories' => sub {
 
 get '/add_category' => sub {
     return template 'add_category.tt', {
-        error_msg    => param('error_msg'),
-        old_name     => param('old_name'),
-        old_tag      => param('old_tag'),
-        old_sequence => param('old_sequence'),
+        error_msg => param('error_msg'),
+        name      => param('name'),
+        tag       => param('tag'),
+        sequence  => param('sequence'),
     };
 };
 
@@ -584,44 +584,15 @@ post '/add_category' => sub {
         warn $@."\n";
         my $return_params = {
             error_msg => $@,
-            old_name     => param("name"),
-            old_tag      => param("tag"),
-            old_sequence => param("sequence"),
+            name      => param("name"),
+            tag       => param("tag"),
+            sequence  => param("sequence"),
         };
 
         return redirect uri_for('/add_category', $return_params);
     }
 
     return redirect uri_for('/add_category');
-};
-
-get '/edit_category/:category_id' => sub {
-
-    template 'not_yet_implemented';
-#    return template 'edit_category.tt', {
-#        error_msg    => param('error_msg'),
-#        old_name     => param('old_name'),
-#        old_tag      => param('old_tag'),
-#        old_sequence => param('old_sequence'),
-#    };
-};
-
-post '/edit_category' => sub {
-
-#    eval { add_category({ params() }) };
-#    if ( $@ ) {
-#        warn $@."\n";
-#        my $return_params = {
-#            error_msg => $@,
-#            old_name     => param("name"),
-#            old_tag      => param("tag"),
-#            old_sequence => param("sequence"),
-#        };
-#
-#        return redirect uri_for('/edit_category', $return_params);
-#    }
-#
-#    return redirect uri_for('/add_category');
 };
 
 sub add_category {
@@ -641,16 +612,62 @@ sub add_category {
     );
 }
 
+get '/edit_category/:id' => sub {
+
+    my $category_row = get_table_by_field('item_groups','id',params->{id})->[0];
+
+    warn "category row = ". Dumper($category_row);
+
+    return template 'edit_category.tt', {
+        error_msg    => param('error_msg'),
+        category     => $category_row,
+    };
+};
+
+post '/edit_category' => sub {
+
+    eval { edit_category({ params() }) };
+    if ( $@ ) {
+        warn $@."\n";
+        my $return_params = { error_msg => $@, };
+        return redirect uri_for('/edit_category/'.param('id'), $return_params);
+    }
+
+    return redirect uri_for('/list_categories');
+};
+
+sub edit_category {
+    my ($data) = @_;
+
+    die "need to supply a category id" if ! $data->{id};
+
+    my $sql =<<"    EOSQL";
+        update item_groups set
+            name = ?,
+            tag  = ?,
+            sequence = ?
+        where id = ?
+    EOSQL
+
+    my $sth = database->prepare($sql);
+    my $rv = $sth->execute(
+        $data->{name},
+        $data->{tag},
+        $data->{sequence},
+        $data->{id},
+    );
+}
+
 #################
 # db general subs
 #################
 sub get_table_by_field {
-    my ($table, $field, $id) = @_;
+    my ($table, $field, $value) = @_;
 
     my $sql = " select * from $table where $field = ?";
 
     my $sth = database->prepare($sql);
-    $sth->execute($id);
+    $sth->execute($value);
 
     my $results = [];
     while ( my $row = $sth->fetchrow_hashref ){

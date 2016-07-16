@@ -1,28 +1,29 @@
 [% INCLUDE categories.tt %]
-<h3>Add Category</h3>
+<h3>Edit Category</h3>
 
 [% error_msg %]
 
 <table>
 
-    <form method='POST' action='[% request.uri_base %]/add_category'>
+    <form method='POST' action='[% request.uri_base %]/edit_category'>
 
+        <input type="hidden" value="[% category.id %]" name="id"/>
         <tr>
             <td>Name</td>
             <td>
-                <input type="text" value="[% name %]" name="name"/>
+                <input type="text" value="[% category.name %]" name="name"/>
             </td>
         </tr>
         <tr>
             <td>Tag</td>
             <td>
-                <input type="text" value="[% tag %]" name="tag"/>
+                <input type="text" value="[% category.tag %]" name="tag"/>
             </td>
         </tr>
         <tr>
             <td>Sort Order</td>
             <td>
-                <input type="text" value="[% sequence %]" name="sequence"/>
+                <input type="text" value="[% category.sequence %]" name="sequence"/>
             </td>
         </tr>
 
@@ -33,5 +34,4 @@
         </tr>
     </form>
 </table>
-
 

@@ -4,7 +4,7 @@
 
 <table>
     <tr>
-        <th>Category</th><th>Sequence</th>
+        <th align='left' >Category</th><th align='left' >Sequence</th>
     </tr>
     [% FOREACH category IN categories %]
         </tr>
