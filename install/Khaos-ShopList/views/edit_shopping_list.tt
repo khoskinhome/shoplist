@@ -1,5 +1,6 @@
 [% INCLUDE lists.tt %]
 <h3>Edit Shopping List</h3>
+<h3>[% shopping_list_name %]</h3>
 
 [% error_msg %]
 

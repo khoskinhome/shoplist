@@ -8,3 +8,5 @@
 
 [% linestr = itemstr %][% ELSE %][% linestr = trystr %][% END %][% END %][% END %][%IF linestr.length > 0 %][% linestr %][% linestr = '' %][% END %]
 
+[% shopping_list_name %]
+

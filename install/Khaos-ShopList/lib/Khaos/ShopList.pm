@@ -1,14 +1,23 @@
 package Khaos::ShopList;
 use Dancer2;
 
+use POSIX qw(strftime);
 our $VERSION = '0.1';
 
 use Data::Dumper;
 use Dancer2::Plugin::Database;
 
-sub SHOW_ALL {"all"};
-sub SHOWN    {"shown"};
-sub HIDDEN   {"hidden"};
+sub SHOW_ALL {"all"}
+sub SHOWN    {"shown"}
+sub HIDDEN   {"hidden"}
+
+sub ALL_CATEGORY_ID {-1}
+
+# TODO implement different types of category sorting.
+sub CATEGORY_ORDER_ALPHA_ASC {'alpha-asc'}
+sub CATEGORY_ORDER_ALPHA_DESC {'alpha-desc'}
+sub CATEGORY_ORDER_SEQUENCE_ASC {'sequence-asc'}
+sub CATEGORY_ORDER_SEQUENCE_DESC {'sequence-desc'}
 
 get '/' => sub {
     template 'index.tt';
@@ -23,15 +32,15 @@ get '/lists'      => sub {
     }
 
     template 'lists.tt', {
-        lists => get_table('lists','create_date DESC'),
+        _lists_n_categories_for_tt({params()}),
     }
 };
 
 get '/edit_list/:list_id' => sub {
+
     template 'edit_list.tt', {
-        edit_list => get_table_by_field('lists', 'id', params->{list_id})->[0],
-        lists     => get_table('lists','create_date DESC'),
-        list_id   => params->{list_id},
+        edit_list   => get_table_by_field('lists', 'id', params->{list_id})->[0],
+        _lists_n_categories_for_tt({params()}),
     }
 };
 
@@ -40,7 +49,10 @@ post '/edit_list' => sub {
     if ( $@ ) {
         warn $@."\n";
 
-        my $return_params = { error_msg => $@, };
+        my $return_params = {
+            error_msg   => $@,
+            category_id => params->{category_id},
+        };
         return redirect uri_for('/edit_list/'.params()->{list_id}, $return_params);
     }
     redirect uri_for('/lists');
@@ -48,18 +60,18 @@ post '/edit_list' => sub {
 
 get '/edit_shopping_list/:list_id' => sub {
     template 'edit_shopping_list.tt', {
-        lists         => get_table('lists','create_date DESC'),
-        list_id       => params->{list_id},
+        shopping_list_name => _get_shopping_list_name({params()}),
+        _lists_n_categories_for_tt({params()}),
         shopping_list =>
-            get_items_n_shops_ordered(undef,params->{list_id}),
+            get_items_n_shops_ordered(undef,params->{list_id}, undef, params->{category_id}),
     }
 };
 
 get '/view_shopping_list_text/:list_id' => sub {
     header 'Content-Type' => 'application/text';
     template 'shopping_list_text_justify.tt', {
-        lists         => get_table('lists','create_date DESC'),
-        list_id       => params->{list_id},
+        shopping_list_name => _get_shopping_list_name({params()}),
+        _lists_n_categories_for_tt({params()}),
         shopping_list =>
             get_items_n_shops_ordered(undef,params->{list_id}, true),
     }, { layout => undef };
@@ -173,7 +185,7 @@ get '/add_list' => sub {
 
     return template 'add_list.tt',
     {
-        lists => get_table('lists','create_date DESC'),
+        _lists_n_categories_for_tt({params()}),
         error_msg   => param('error_msg'),
     };
 };
@@ -207,6 +219,36 @@ sub add_list {
     );
 }
 
+sub _get_shopping_list_name {
+    my ($p_params) = @_;
+    my $row = get_table_by_field('lists','id',$p_params->{list_id})->[0];
+
+    return $row->{name}._generated_tstmp() if $row;
+    return _generated_tstmp();
+}
+
+sub _generated_tstmp {
+    return " ( Generated : ". strftime('%F %T', localtime())." )";
+}
+
+sub _lists_n_categories_for_tt {
+    my ($p_params) = @_;
+
+    my @categories = (
+        {ALL_CATEGORY_ID => -1, name => 'All', tag => 'all', sequence => 0},
+        @{get_table('item_groups','sequence ASC')}
+    );
+    my $category_id = $p_params->{category_id};
+
+    $category_id = ALL_CATEGORY_ID if ! $category_id;
+
+    return (
+        lists       => get_table('lists','create_date DESC'),
+        list_id     => $p_params->{list_id},
+        categories  => \@categories,
+        category_id => $category_id,
+    );
+}
 
 ##########################
 # items
@@ -302,7 +344,7 @@ get '/list_all_items' => sub {
 };
 
 sub get_items_n_shops_ordered {
-    my ($show_type, $shopping_list_id, $quant_gt_zero) = @_;
+    my ($show_type, $shopping_list_id, $quant_gt_zero, $category_id) = @_;
 
     # $show_type works viewing items (thus on the items.show_item field)
     # When viewing a shopping_list the $shopping_list_id is supplied,
@@ -351,6 +393,15 @@ sub get_items_n_shops_ordered {
         EOSQL_2
 
         @bind = ( $shopping_list_id );
+    }
+
+    if ( defined $category_id && $category_id >= 1 ){
+        if( ! $where ){
+            $where  = " where igs.id ? ";
+        } else {
+            $where .= " and igs.id = ? ";
+        }
+        push @bind, $category_id;
     }
 
     my $sql =<<"    EOSQL_3";

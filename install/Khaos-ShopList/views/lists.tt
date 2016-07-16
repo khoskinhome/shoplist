@@ -5,8 +5,9 @@
 
             var route = $(this).attr('name');
             var list_id = $('#list_id').val();
+            var category_id = $('#category_id').val();
 
-            var urlref = '[% request.uri_base %]/' + route + '/' + list_id ;
+            var urlref = '[% request.uri_base %]/' + route + '/' + list_id + '?category_id=' + category_id;
 
             if ( route == 'view_shopping_list_text' ){
                 window.open(urlref);
@@ -50,6 +51,12 @@
 <table>
     <tr>
         <td>
+            <button class='navigate' name='add_list'>Add List</button>
+            <button class='navigate_id' name='view_shopping_list_text' >Printable</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
             <select id='list_id' name='list_id'>
                 [% FOREACH row IN lists %]
                     <option value='[% row.id %]' [% IF list_id == row.id %] selected [% END %] >
@@ -57,13 +64,20 @@
                     </option>
                 [% END %]
             </select>
+
+            <select id='category_id' name='category_id'>
+                [% FOREACH row IN categories %]
+                    <option value='[% row.id %]' [% IF category_id == row.id %] selected [% END %] >
+                        [% row.name %]
+                    </option>
+                [% END %]
+            </select>
+
         </td>
 
-        <td> <button class='navigate' name='add_list'>Add List</button> </td>
+        <td> <button class='navigate_id' name='edit_shopping_list'>Edit Shopping List</button> </td>
 
         <td> <button class='navigate_id' name='edit_list'>Edit List</button> </td>
-        <td> <button class='navigate_id' name='edit_shopping_list'>Edit Shopping List</button> </td>
-        <td> <button class='navigate_id' name='view_shopping_list_text' >Printable</button> </td>
     </tr>
 </table>
 
