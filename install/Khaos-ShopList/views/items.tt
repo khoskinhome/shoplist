@@ -1,8 +1,9 @@
 <table>
     <tr>
-        <td><a href='[% request.uri_base %]/list_shown_items'>Shown Items</a></td>
-        <td><a href='[% request.uri_base %]/list_all_items'>All Items</a></td>
-        <td><a href='[% request.uri_base %]/add_item'>Add Item</a></td>
+        <td><button class='navigate' name='list_shown_items'>Shown Items</button></td>
+        <td><button class='navigate' name='list_hidden_items'>Hidden Items</button></td>
+        <td><button class='navigate' name='list_all_items'>All Items</button></td>
+        <td><button class='navigate' name='add_item'>Add Item</button></td>
     </tr>
 </table>
 

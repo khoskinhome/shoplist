@@ -6,6 +6,10 @@ our $VERSION = '0.1';
 use Data::Dumper;
 use Dancer2::Plugin::Database;
 
+sub SHOW_ALL {"all"};
+sub SHOWN    {"shown"};
+sub HIDDEN   {"hidden"};
+
 get '/' => sub {
     template 'index.tt';
 };
@@ -26,7 +30,6 @@ get '/edit_list/:list_id' => sub {
 };
 
 post '/edit_list' => sub {
-    # warn "POST PARAMS \n".Dumper (params());
     eval { edit_list({ params() }) };
     if ( $@ ) {
         warn $@."\n";
@@ -38,7 +41,6 @@ post '/edit_list' => sub {
 };
 
 get '/edit_shopping_list/:list_id' => sub {
-    # warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}) );
     template 'edit_shopping_list.tt', {
         lists         => get_table('lists','create_date DESC'),
         list_id       => params->{list_id},
@@ -48,8 +50,7 @@ get '/edit_shopping_list/:list_id' => sub {
 };
 
 get '/view_shopping_list_text/:list_id' => sub {
-    # warn Dumper ( get_items_n_shops_ordered(undef,params->{list_id}, true) );
-    header 'Content-Type' => 'application/json';
+    header 'Content-Type' => 'application/text';
     template 'shopping_list_text_justify.tt', {
         lists         => get_table('lists','create_date DESC'),
         list_id       => params->{list_id},
@@ -60,13 +61,13 @@ get '/view_shopping_list_text/:list_id' => sub {
 
 post '/edit_shopping_list_item/:list_id/:item_id/:plus_minus_action' => sub {
 
-    # warn ( { Dumper(params()) } );
     my $quantity;
     eval{ $quantity = plus_minus_shopping_list_item({ params() }) };
     if ( $@ ) {
         warn $@."\n";
 
         status 'bad_request'; # TODO might be internal error.
+        return;
     }
 
     status 'OK';
@@ -104,7 +105,6 @@ sub plus_minus_shopping_list_item {
     };
 
     if ( defined $results ) {
-        warn "DO UPDATE";
         my $quantity = $change_quantity->( $results->{quantity} );
 
         my $sql =<<"        EOSQL";
@@ -122,7 +122,6 @@ sub plus_minus_shopping_list_item {
         return $quantity;
 
     } else {
-        warn "DO INSERT";
         my $quantity = $change_quantity->( 0 );
 
         my $sql =<<"        EOSQL";
@@ -152,8 +151,7 @@ sub edit_list {
     my $sql =<<"    EOSQL";
         update lists set
             name = ?,
-            show_all_items = ?,
-            show_list = ?
+            show_all_items = ?
         where id = ?
     EOSQL
 
@@ -161,7 +159,6 @@ sub edit_list {
     my $rv = $sth->execute(
         $data->{name},
         $data->{show_all_items} ? 'true' : 'false',
-        $data->{show_list} ? 'true' : 'false',
         $list_id,
     );
 }
@@ -193,14 +190,13 @@ sub add_list {
 
     my $sql =<<"    EOSQL";
         insert into lists
-        ( name, show_list , show_all_items )
-        values ( ?, ?, ? )
+        ( name, show_all_items )
+        values ( ?, ? )
     EOSQL
 
     my $sth = database->prepare($sql);
     my $rv = $sth->execute(
         $data->{name},
-        $data->{show_list} ? 'true' : 'false',
         $data->{show_all_items} ? 'true' : 'false',
     );
 }
@@ -242,16 +238,11 @@ post '/add_item' => sub {
         };
     }
 
-    warn "POST return params \n".Dumper($return_params);
     redirect uri_for('/add_item', $return_params);
 
 };
 
 get '/edit_item/:item_id' => sub {
-
-    warn "EDIT ITEM\n".Dumper(
-            get_table_by_field('item_shops','item_id', params->{item_id}),
-    );
 
     template 'edit_item.tt',
     {
@@ -268,8 +259,6 @@ get '/edit_item/:item_id' => sub {
 
 post '/edit_item' => sub {
 
-    warn "POST PARAMS \n".Dumper (params());
-
     eval { edit_item({ params() }) };
     if ( $@ ) {
         warn $@."\n";
@@ -284,25 +273,36 @@ post '/edit_item' => sub {
 
 get '/list_shown_items' => sub {
 
-    #warn Dumper ( get_items_n_shops_ordered());
     template 'list_all_items.tt', {
-        items => get_items_n_shops_ordered(),
+        title => "Shown Items",
+        items => get_items_n_shops_ordered(SHOWN),
+    };
+};
+
+get '/list_hidden_items' => sub {
+
+    template 'list_all_items.tt', {
+        title => "Hidden Items",
+        items => get_items_n_shops_ordered(HIDDEN),
     };
 };
 
 get '/list_all_items' => sub {
 
-    #warn Dumper ( get_items_n_shops_ordered(true));
     template 'list_all_items.tt', {
-        items => get_items_n_shops_ordered(true),
+        title => "All Items",
+        items => get_items_n_shops_ordered(SHOW_ALL),
     };
 };
 
 sub get_items_n_shops_ordered {
-    my ($show_all, $shopping_list_id, $quant_gt_zero) = @_;
+    my ($show_type, $shopping_list_id, $quant_gt_zero) = @_;
 
-    # $show_all works on the items.show_item field.
-    # if the $shopping_list_id is supplied, $show_all for items will be got from the lists record ( and $show_all param supplied to sub is ignored )
+    # $show_type works viewing items (thus on the items.show_item field)
+    # When viewing a shopping_list the $shopping_list_id is supplied,
+    # so whether an shopping_list item is shown is dependent on the lists record for the shopping_list
+
+    # $quant_gt_zero only works when $shopping_list_id is supplied.
 
     my $select = '';
     my $where  = '';
@@ -310,34 +310,41 @@ sub get_items_n_shops_ordered {
     my @bind   = ();
 
     if ( ! $shopping_list_id ) {
-        $where = 'where i.show_item is true' if ! $show_all;
+        $where = 'where i.show_item is true'  if $show_type eq SHOWN();
+        $where = 'where i.show_item is false' if $show_type eq HIDDEN();
     } else {
 
-
         $select = << "        EOSQL_1";
-            ,shplst.quantity  as shopping_list_quantity
-            ,shplst.priority as shopping_list_priority
-            ,shplst.price    as shopping_list_price
-            ,shplst.id       as shopping_list_id
-            ,shplst.list_id as shopping_list_list_id
+            ,( select quantity from shopping_lists as sl
+                 where sl.item_id=i.id  and sl.list_id  = list.id)
+                     as shopping_list_quantity
+
+            ,( select priority from shopping_lists as sl2
+                 where sl2.item_id=i.id and sl2.list_id = list.id)
+                     as shopping_list_priority
+
+            ,( select price    from shopping_lists as sl3
+                 where sl3.item_id=i.id and sl3.list_id = list.id)
+                     as shopping_list_price
+
+            ,( select id       from shopping_lists as sl4
+                 where sl4.item_id=i.id and sl4.list_id = list.id)
+                     as shopping_list_id
+            , list.id as list_id
+
         EOSQL_1
 
-        $from =
-             "left join lists as list on ( list.id = ? )"
-            ."left join shopping_lists as shplst on (shplst.item_id = i.id)";
+        $from = "left join lists as list on ( list.id = ? )";
 
         $where = << "        EOSQL_2";
-            where ( shplst.list_id = ? or shplst.list_id is null )
-            and (
+        where
+            (
                 ( list.show_all_items = false and i.show_item = true )
                 or list.show_all_items = true
             )
         EOSQL_2
 
-        $where .= " and shplst.quantity > 0\n" if $quant_gt_zero;
-
-        @bind = ( $shopping_list_id, $shopping_list_id );
-
+        @bind = ( $shopping_list_id );
     }
 
     my $sql =<<"    EOSQL_3";
@@ -367,8 +374,6 @@ sub get_items_n_shops_ordered {
     my $sth = database->prepare($sql);
     $sth->execute( @bind );
 
-    my $results = [];
-
     my $current_item_name  = '';
     my $current_item_group_name = '';
 
@@ -378,21 +383,22 @@ sub get_items_n_shops_ordered {
         $i_ar_last->{shops_n_name} = "(".join(',',@{$i_ar_last->{shops}}).") ".$i_ar_last->{name};
     };
 
-    my $shopping_items = sub {
-        my ( $row ) = @_;
+    my $results = [];
+    while ( my $row = $sth->fetchrow_hashref ){
+
+        my %shopping_items = ();
         if ( $shopping_list_id ) {
-            return (
+
+            next if ! $row->{shopping_list_quantity} and $quant_gt_zero;
+
+            %shopping_items = (
                 shopping_list_quantity => $row->{shopping_list_quantity},
                 shopping_list_priority => $row->{shopping_list_priority},
                 shopping_list_price    => $row->{shopping_list_price},
                 shopping_list_id       => $row->{shopping_list_id},
-                shopping_list_list_id  => $row->{shopping_list_list_id},
             );
         }
-        return ();
-    };
 
-    while ( my $row = $sth->fetchrow_hashref ){
         if ( $current_item_group_name ne $row->{item_group_name} ){
             $current_item_group_name = $row->{item_group_name};
             push @$results, {
@@ -408,7 +414,7 @@ sub get_items_n_shops_ordered {
                 , { id    => $row->{item_id},
                     name  => $current_item_name,
                     shops => [ $row->{shop_tag}],
-                    $shopping_items->($row),
+                    %shopping_items,
                   };
 
             my $i_ar = $results->[$#$results]{items};

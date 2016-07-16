@@ -1,6 +1,6 @@
 [% INCLUDE items.tt %]
 
-<h3>All Items</h3>
+<h3>[% title %]</h3>
 [% error_msg %]
 
 <table>

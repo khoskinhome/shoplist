@@ -14,17 +14,23 @@
 
 </head>
 <body>
+<script>
+    $(document).ready(function(){
+        $("button.navigate").click(function(){
+            var urlref = '[% request.uri_base %]/' + $(this).attr('name') ;
+            location.replace(urlref);
+            return false;
+        });
+    });
+</script>
 
 <table>
     <tr>
-
-        <td><a href='[% request.uri_base %]/lists'>Lists</a></td>
-        <td><a href='[% request.uri_base %]/list_shown_items'>Items</a></td>
-        <td><a href='[% request.uri_base %]/shops'>Shops</a></td>
-        <td><a href='[% request.uri_base %]/categories'>Categories</a></td>
-
+        <td><button class='navigate' name='lists'>Lists</button></td>
+        <td><button class='navigate' name='list_shown_items'>Items</button></td>
+        <td><button class='navigate' name='shops'>Shops</button></td>
+        <td><button class='navigate' name='categories'>Categories</button></td>
     </tr>
-
 </table>
 
 [% content %]

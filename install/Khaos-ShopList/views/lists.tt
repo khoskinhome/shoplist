@@ -1,6 +1,7 @@
 <script>
     $(document).ready(function(){
-        $("button.navigate").click(function(){
+
+        $("button.navigate_id").click(function(){
 
             var route = $(this).attr('name');
             var list_id = $('#list_id').val();
@@ -48,10 +49,6 @@
 
 <table>
     <tr>
-        <td><a href='[% request.uri_base %]/add_list'>Add List</a></td>
-    </tr>
-
-    <tr>
         <td>
             <select id='list_id' name='list_id'>
                 [% FOREACH row IN lists %]
@@ -61,15 +58,12 @@
                 [% END %]
             </select>
         </td>
-        <td>
-            <button class='navigate' name='edit_shopping_list'>Edit Shopping List</button>
-        </td>
-        <td>
-            <button class='navigate' name='edit_list'>Edit List</button>
-        </td>
-        <td>
-            <button class='navigate' name='view_shopping_list_text' >Printable</button>
-        </td>
+
+        <td> <button class='navigate' name='add_list'>Add List</button> </td>
+
+        <td> <button class='navigate_id' name='edit_list'>Edit List</button> </td>
+        <td> <button class='navigate_id' name='edit_shopping_list'>Edit Shopping List</button> </td>
+        <td> <button class='navigate_id' name='view_shopping_list_text' >Printable</button> </td>
     </tr>
 </table>
 

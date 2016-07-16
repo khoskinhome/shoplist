@@ -1,30 +1,26 @@
-get rid of <a> tag links, replace with <button>s
+
+when the shoplist drop down is change get the browser to show the edit-shopping-list action.
 
 css pretifying
 
 items table
     order_by int default 1.
+    the sql generating the lists of items would need to be modified.
 
 items_order action.
     new view on items that allows the order_by to be set, using jQuery.
 
-
-list_hidden_items action. new !
-
-view_shopping_list_pdf action. new !
-    generates a pdf version of the shopping list.
-
 add_category action. New !
-    can only add categories, ui will not allow renaming.
+    can only add categories, ui will not allow renaming or deletion
 
 add_shop action. New !
-    can only add shops, ui will not allow renaming.
+    can only add shops, ui will not allow renaming or deletion
 
 edit_item action
     a way to set the shop prices.
     a way to set the items.order_by int.
 
-    stop editting of item names that have more than one un-finalised-list referencing it.
+    stop editting of item names that have more than one un-finalised-list referencing it. This is if I bother with "finalising" lists.
 
 
 view_shopping_list action. new!
@@ -37,38 +33,52 @@ edit_shopping_list action
 Make a mobile friendly version (responsive)
 
 Prices.
-    take the dearest shop price and summarise.
-    take the cheapest shop and summarise.
+    in the shopping-list views :
+        take the dearest shop price and summarise
+        take the cheapest shop and summarise.
+
+view_shopping_list_pdf action. new !
+    generates a pdf version of the shopping list.
+    Do I really need a PDF version ? The text one works in Linux.
+
+make the printable shopping list usable in a windows text editor,
+basically fix the line break characters.
+
+################
+Finalising lists
+################
+    Do I really want to do the "finalise" stuff ?
+
+    edit_list
+        finalise checkbox. has pop up warning, saying no editting afterwards.
+            item names and prices are copied from items table into shopping_lists table.
+
+    delete_finalised_list action. new !
+        will error if a list hasn't been finalised.
 
 
-edit_list
-    finalise checkbox. has pop up warning, saying no editting afterwards.
-        item names and prices are copied from items table into shopping_lists table.
+    edit_shopping_list action
 
-delete_finalised_list action. new !
-    will error if a list hasn't been finalised.
+        will throw an error on a finalised shopping list.
 
+        shopping_lists table, new fields :
+            final_item_price
+            final_item_name
 
-edit_shopping_list action
-
-    will throw an error on a finalised shopping list.
-
-    shopping_lists table, new fields :
-        final_item_price
-        final_item_name
-
-        constraint that says either item_id or final_item_name is null, and one must be not null.
+            constraint that says either item_id or final_item_name is null, and one must be not null.
 
 
 
-the drop down box that selects the list, make jQuery hide/show the action buttons depending on if the list is finalised or not. i.e.
-    Active Lists can
-        Edit Shopping list
-        Edit List
-        be Printable
-    Finalised Lists can be
-        Printable
-        Deleted.
+    the drop down box that selects the list, make jQuery hide/show the action buttons depending on if the list is finalised or not. i.e.
+        Active Lists can
+            Edit Shopping list
+            Edit List
+            be Printable
+        Finalised Lists can be
+            Printable
+            Deleted.
+##########
+BUGS
+##########
 
-
-Get local browser to open text editor
+If a shopping_list has shown-all-items set to false, and an item has a positive quantity set on it, then the item is set to be hidden, the item will then not show up in the shopping-list section. Not sure if this a bug or feature. Fixing it in the sql would be hard.

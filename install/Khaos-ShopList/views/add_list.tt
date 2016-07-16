@@ -20,13 +20,6 @@
             </td>
         </tr>
         <tr>
-            <td>Show List</td>
-            <td>
-                <input type="checkbox" name="show_list" checked />
-            </td>
-        </tr>
-
-        <tr>
             <td>
                 <input type="submit" value="Submit"/>
             </td>
