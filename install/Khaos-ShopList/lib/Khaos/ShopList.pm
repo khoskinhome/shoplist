@@ -116,6 +116,8 @@ sub plus_minus_shopping_list_item {
         } elsif ( $data->{plus_minus_action} eq 'minus' ) {
             $quantity--;
             $quantity = 0 if $quantity < 0;
+        } elsif ( $data->{plus_minus_action} eq 'delete' ) {
+            $quantity = 0 ;
         } else {
             die "Unrecognised plus_minus_action of '$data->{plus_minus_action}'"
         }
