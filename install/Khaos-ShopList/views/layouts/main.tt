@@ -4,7 +4,12 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
 <title>Khaos::ShopList</title>
+
+[% IF is_mobile %]
+<link rel="stylesheet" href="[% request.uri_base %]/css/style-mobile.css" />
+[% ELSE %]
 <link rel="stylesheet" href="[% request.uri_base %]/css/style.css" />
+[% END %]
 
 <!-- Grab jQuery from a CDN, fall back to local if necessary -->
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -21,6 +26,11 @@
             location.replace(urlref);
             return false;
         });
+
+
+
+
+
     });
 </script>
 

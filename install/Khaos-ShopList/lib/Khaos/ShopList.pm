@@ -6,6 +6,8 @@ our $VERSION = '0.1';
 
 use Data::Dumper;
 use Dancer2::Plugin::Database;
+use Dancer2::Session::Memcached;
+
 
 sub SHOW_ALL {"all"}
 sub SHOWN    {"shown"}
@@ -20,11 +22,14 @@ sub CATEGORY_ORDER_SEQUENCE_ASC {'sequence-asc'}
 sub CATEGORY_ORDER_SEQUENCE_DESC {'sequence-desc'}
 
 get '/' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
+
     template 'index.tt';
 };
 
 ## Lists
 get '/lists'      => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
 
     my $list_row = get_max_id_row_table("lists");
     if ( $list_row->{id} ) {
@@ -37,6 +42,7 @@ get '/lists'      => sub {
 };
 
 get '/edit_list/:list_id' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
 
     template 'edit_list.tt', {
         edit_list   => get_table_by_field('lists', 'id', params->{list_id})->[0],
@@ -59,6 +65,7 @@ post '/edit_list' => sub {
 };
 
 get '/edit_shopping_list/:list_id' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'edit_shopping_list.tt', {
         shopping_list_name => _get_shopping_list_name({params()}),
         _lists_n_categories_for_tt({params()}),
@@ -68,6 +75,7 @@ get '/edit_shopping_list/:list_id' => sub {
 };
 
 get '/view_shopping_list_text/:list_id' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     header 'Content-Type' => 'application/text';
     template 'shopping_list_text_justify.tt', {
         shopping_list_name => _get_shopping_list_name({params()}),
@@ -184,6 +192,7 @@ sub edit_list {
 }
 
 get '/add_list' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
 
     return template 'add_list.tt',
     {
@@ -249,14 +258,20 @@ sub _lists_n_categories_for_tt {
         list_id     => $p_params->{list_id},
         categories  => \@categories,
         category_id => $category_id,
+        _disp_col(),
     );
+
 }
 
 ##########################
 # items
-get '/items'      => sub { template 'items.tt' };
+get '/items'      => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
+    template 'items.tt';
+};
 get '/add_item' => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'add_item.tt',
     {
         error_msg   => param('error_msg'),
@@ -265,8 +280,21 @@ get '/add_item' => sub {
         old_show_item  => param('old_show_item'),
         shops       => get_table('shops','name'),
         item_groups => get_table('item_groups','name'),
+        _disp_col(),
     };
 };
+
+sub _disp_col {
+
+    my $disp_col = ((session('disp_col') * 1) || 3);
+
+    $disp_col = 1 if is_mobile_browser();
+
+    return (
+        disp_col  => $disp_col,
+        is_mobile => is_mobile_browser(),
+    );
+}
 
 post '/add_item' => sub {
 
@@ -294,6 +322,7 @@ post '/add_item' => sub {
 
 get '/edit_item/:item_id' => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'edit_item.tt',
     {
         error_msg   => param('error_msg'),
@@ -323,25 +352,31 @@ post '/edit_item' => sub {
 
 get '/list_shown_items' => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'list_all_items.tt', {
         title => "Shown Items",
         items => get_items_n_shops_ordered(SHOWN),
+        _disp_col(),
     };
 };
 
 get '/list_hidden_items' => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'list_all_items.tt', {
         title => "Hidden Items",
         items => get_items_n_shops_ordered(HIDDEN),
+        _disp_col(),
     };
 };
 
 get '/list_all_items' => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'list_all_items.tt', {
         title => "All Items",
         items => get_items_n_shops_ordered(SHOW_ALL),
+        _disp_col(),
     };
 };
 
@@ -606,27 +641,35 @@ sub edit_item {
 # shops
 get '/shops'      => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     return template 'not_yet_implemented';
 
     # template 'shops.tt';
 };
 
 # categories
-get '/categories' => sub { template 'categories.tt' };
+get '/categories' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
+    template 'categories.tt';
+};
 
 get '/list_categories' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     return template 'list_categories.tt', {
         categories => get_table('item_groups', 'sequence'),
         error_msg  => param('error_msg'),
+        _disp_col(),
     };
 };
 
 get '/add_category' => sub {
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     return template 'add_category.tt', {
         error_msg => param('error_msg'),
         name      => param('name'),
         tag       => param('tag'),
         sequence  => param('sequence'),
+        _disp_col(),
     };
 };
 
@@ -667,6 +710,7 @@ sub add_category {
 
 get '/edit_category/:id' => sub {
 
+    if (param('c')){ session 'disp_col' =>  (param('c')) }
     my $category_row = get_table_by_field('item_groups','id',params->{id})->[0];
 
     warn "category row = ". Dumper($category_row);
@@ -758,6 +802,19 @@ sub get_table {
     }
 
     return $results;
+}
+
+
+sub is_mobile_browser {
+
+    warn request->user_agent;
+
+    if ( request->user_agent =~ m/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i
+        || substr(request->user_agent, 0, 4) =~ m/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v)|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i) {
+
+        return 1;
+    }
+    return 0;
 }
 
 true;

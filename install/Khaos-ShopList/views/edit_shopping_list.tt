@@ -3,7 +3,6 @@
 <h3>[% shopping_list_name %]</h3>
 
 [% error_msg %]
-
 <table>
     [% FOREACH group IN shopping_list %]
         <tr><td><h4>[% group.item_group_name %]</h4></td></tr>
@@ -14,7 +13,7 @@
 
         [% FOREACH item IN group.items %]
             [% count = count + 1 %]
-            [% IF count > 2 %]
+            [% IF count >= disp_col %]
                 [% count = 0 %]
                 </tr>
                 <tr>

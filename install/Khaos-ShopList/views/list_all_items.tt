@@ -11,7 +11,7 @@
                 <tr>
         [% FOREACH item IN group.items %]
             [% count = count + 1 %]
-            [% IF count > 4 %]
+            [% IF count >= disp_col %]
                 [% count = 0 %]
                 </tr>
                 <tr>

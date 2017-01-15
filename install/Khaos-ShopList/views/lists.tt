@@ -18,6 +18,17 @@
             return false;
         });
 
+
+        $("select#category_id").change( function() {
+
+            var category_id = $('#category_id').val();
+            var list_id = $('#list_id').val();
+            var urlref = '[% request.uri_base %]/edit_shopping_list/' + list_id + '?category_id=' + category_id;
+
+            $(location).attr('href',urlref );
+            return false;
+        });
+
         $("button.plus_minus").click(function(){
             var item_id            = $(this).attr('name');
             var plus_minus_action  = $(this).attr('value');
