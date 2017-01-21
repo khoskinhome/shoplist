@@ -27,9 +27,23 @@
             return false;
         });
 
+        $("button.add-item-by-category").click(function(){
 
+            var h_id = $(this).attr('id');
+            var extractFieldNUserId = /^(.*)-id(\d+)$/g;
+            var match = extractFieldNUserId.exec( h_id );
 
+            if ( ! $.isArray(match)){
+                alert("Can't get field or db-id for : " + h_id);
+                return;
+            }
 
+            var category_id  = match[2];
+
+            var urlref = '[% request.uri_base %]/' + $(this).attr('name') + '?category_id=' + category_id ;
+            location.replace(urlref);
+            return false;
+        });
 
     });
 </script>

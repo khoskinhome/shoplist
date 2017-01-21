@@ -274,6 +274,7 @@ get '/add_item' => sub {
     if (param('c')){ session 'disp_col' =>  (param('c')) }
     template 'add_item.tt',
     {
+        category_id => param('category_id'),
         error_msg   => param('error_msg'),
         old_name    => param('old_name'),
         old_item_group => param('old_item_group'),
@@ -498,6 +499,7 @@ sub get_items_n_shops_ordered {
             $current_item_group_name = $row->{item_group_name};
             push @$results, {
                 item_group_name => $row->{item_group_name},
+                item_group_id => $row->{item_group_id},
                 items => []
             };
         }

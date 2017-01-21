@@ -35,7 +35,7 @@
             <td>
                 <select name='item_group'>
                     [% FOREACH row IN item_groups %]
-                        <option value='[% row.id %]' [% IF row.id == old_item_group %] selected [% END %] >
+                        <option value='[% row.id %]' [% IF row.id == old_item_group || row.id == category_id %] selected [% END %] >
                             [% row.name %]
                         </option>
                     [% END %]

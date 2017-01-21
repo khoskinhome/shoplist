@@ -26,6 +26,10 @@ button, input, select {
     cursor: pointer;
 }
 
+.cat-title {
+    font-size: 20px;
+}
+
 .plus_minus {
     color: red;
 }

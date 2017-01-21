@@ -5,7 +5,12 @@
 [% error_msg %]
 <table>
     [% FOREACH group IN shopping_list %]
-        <tr><td><h4>[% group.item_group_name %]</h4></td></tr>
+        <tr>
+            <td class='cat-title' >[% group.item_group_name %]
+                <button class='add-item-by-category' id='add_item_by_category-id[% group.item_group_id %]' name='add_item'>Add Item</button>
+
+            </td>
+        </tr>
 
         [% count = -1 %]
 
@@ -26,7 +31,8 @@
                         <button class='plus_minus' name ='[% item.id %]' value='delete'>Del</button>
 
 
-                    <td><a href='[% request.uri_base %]/edit_item/[% item.id %]'>[% item.shops_n_name %]</a></td>
+                        <a href='[% request.uri_base %]/edit_item/[% item.id %]'>[% item.shops_n_name %]</a>
+                    </td>
         [% END %]
 
                 </tr>
