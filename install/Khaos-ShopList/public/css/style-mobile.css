@@ -12,18 +12,32 @@ font-size: 40px;
 color: #333;
 }
 
-th, td, button, input, select {
+th, td {
     font-size: 40px;
 }
 
+button, input, select {
+    padding: 6px;
+    font-size: 50px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px;
+    cursor: pointer;
+}
 
-h1 {
-font-size: 28px;
-color: #000;
+.plus_minus {
+    color: red;
 }
 
 .quantity {
     color: red;
+    width: 50px;
+}
+
+h1 {
+font-size: 28px;
+color: #000;
 }
 
 a  {color: #03c}

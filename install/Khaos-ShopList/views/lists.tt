@@ -19,7 +19,7 @@
         });
 
 
-        $("select#category_id").change( function() {
+        $("select.select-list-or-category").change( function() {
 
             var category_id = $('#category_id').val();
             var list_id = $('#list_id').val();
@@ -68,7 +68,7 @@
     </tr>
     <tr>
         <td>
-            <select id='list_id' name='list_id'>
+            <select class='select-list-or-category' id='list_id' name='list_id'>
                 [% FOREACH row IN lists %]
                     <option value='[% row.id %]' [% IF list_id == row.id %] selected [% END %] >
                         [% row.name %]
@@ -76,7 +76,7 @@
                 [% END %]
             </select>
 
-            <select id='category_id' name='category_id'>
+            <select class='select-list-or-category' id='category_id' name='category_id'>
                 [% FOREACH row IN categories %]
                     <option value='[% row.id %]' [% IF category_id == row.id %] selected [% END %] >
                         [% row.name %]
@@ -85,8 +85,9 @@
             </select>
 
         </td>
-
+<!--
         <td> <button class='navigate_id' name='edit_shopping_list'>Edit Shopping List</button> </td>
+-->
 
         <td> <button class='navigate_id' name='edit_list'>Edit List</button> </td>
     </tr>

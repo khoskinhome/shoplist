@@ -332,6 +332,7 @@ get '/edit_item/:item_id' => sub {
             get_table_by_field('item_shops','item_id', params->{item_id}),
         shops       => get_table('shops','name'),
         item_groups => get_table('item_groups','name'),
+        _disp_col(),
 
     };
 };
@@ -642,7 +643,9 @@ sub edit_item {
 get '/shops'      => sub {
 
     if (param('c')){ session 'disp_col' =>  (param('c')) }
-    return template 'not_yet_implemented';
+    return template 'not_yet_implemented',{
+        _disp_col(),
+    };
 
     # template 'shops.tt';
 };
@@ -650,7 +653,9 @@ get '/shops'      => sub {
 # categories
 get '/categories' => sub {
     if (param('c')){ session 'disp_col' =>  (param('c')) }
-    template 'categories.tt';
+    template 'categories.tt', {
+        _disp_col(),
+    };
 };
 
 get '/list_categories' => sub {
@@ -718,6 +723,7 @@ get '/edit_category/:id' => sub {
     return template 'edit_category.tt', {
         error_msg    => param('error_msg'),
         category     => $category_row,
+        _disp_col(),
     };
 };
 

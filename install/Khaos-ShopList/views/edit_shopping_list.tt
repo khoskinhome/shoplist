@@ -20,10 +20,10 @@
             [% END %]
 
                     <td>
-                        <button class='plus_minus quantity' name ='[% item.id %]' value='minus'>-</button>
-                        <input  class='quantity' id='quantity_item_id_[% item.id %]' name ='[% item.id %]' value='[% IF item.shopping_list_quantity %][% item.shopping_list_quantity %][% END %]' type='text' style="width: 25px;" disabled >
-                        <button class='plus_minus quantity' name ='[% item.id %]' value='plus'>+</button>
-                        <button class='plus_minus quantity' name ='[% item.id %]' value='delete'>Del</button>
+                        <button class='plus_minus' name ='[% item.id %]' value='minus'>&nbsp;-&nbsp;</button>
+                        <input  class='quantity' id='quantity_item_id_[% item.id %]' name ='[% item.id %]' value='[% IF item.shopping_list_quantity %][% item.shopping_list_quantity %][% END %]' type='text' disabled >
+                        <button class='plus_minus' name ='[% item.id %]' value='plus'>&nbsp;+&nbsp;</button>
+                        <button class='plus_minus' name ='[% item.id %]' value='delete'>Del</button>
 
 
                     <td><a href='[% request.uri_base %]/edit_item/[% item.id %]'>[% item.shops_n_name %]</a></td>
